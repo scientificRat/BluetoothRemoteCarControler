@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_device_list"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.scientificrat.stm32.bluetoothremotecarcontroler.activity.DeviceListActivity"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Switch
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:id="@+id/discoverDeviceSwitch"
+            android:textAppearance="@android:style/TextAppearance.Material.Small"
+            android:text="扫描设备"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            tools:layout_editor_absoluteY="0dp"
+            tools:layout_editor_absoluteX="285dp"
+            android:textAllCaps="false"
+            android:textColor="@android:color/darker_gray" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:weightSum="1"
+        android:id="@+id/functionalPanel"
+        android:visibility="visible">
+
+
+        <TextView
+            android:text="设备列表"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView_devlist" />
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="327dp"
+            android:id="@+id/deviceList"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentEnd="true" />
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/controlPanel">
+
+            <TextView
+                android:text="控制"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/textView_baudrate" />
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1">
+
+                <RelativeLayout
+                    android:layout_width="165dp"
+                    android:layout_height="match_parent">
+
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleSmall"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/connectionProgressBar"
+                        android:visibility="gone"
+                        android:layout_centerVertical="true"
+                        android:layout_toStartOf="@+id/connectionStateTextView" />
+
+                    <TextView
+                        android:text="*请从列表选择设备"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/selectedDeviceTextView"
+                        android:textSize="12sp"
+                        android:layout_centerVertical="true" />
+
+                    <TextView
+                        android:text="(未连接)"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/connectionStateTextView"
+                        android:textSize="12sp"
+                        android:layout_centerVertical="true"
+                        android:layout_alignParentEnd="true" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <ToggleButton
+                        android:text="ToggleButton"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/toggle_connect"
+                        android:textOff="连接"
+                        android:textOn="关闭"
+                        android:layout_width="match_parent"
+                        android:layout_weight="1" />
+
+                    <Button
+                        android:text="帮助"
+                        android:layout_width="match_parent"
+                        android:id="@+id/help_button"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_centerHorizontal="true"
+                android:id="@+id/selectActivityPanel">
+
+                <Button
+                    android:text="摇杆控制"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/enterRockerControlButton"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:text="字符控制"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/enterCharacterControlButton"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
