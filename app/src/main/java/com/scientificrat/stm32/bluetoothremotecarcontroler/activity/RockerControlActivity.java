@@ -19,6 +19,9 @@ import com.scientificrat.stm32.bluetoothremotecarcontroler.widget.OnRockerChange
 import com.scientificrat.stm32.bluetoothremotecarcontroler.widget.Rocker;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.TimerTask;
 
 public class RockerControlActivity extends AppCompatActivity {
 
@@ -65,49 +68,77 @@ public class RockerControlActivity extends AppCompatActivity {
         //显示连接的设备
         BluetoothDevice connectedDevice = bluetoothConnection.getBluetoothDevice();
         deviceInfoTextView.setText(connectedDevice.getAddress() + "\n" + connectedDevice.getName());
-        //左摇杆
-        rockerLeft.setOnRockerChangeListener(new OnRockerChangeListener() {
+//        //左摇杆
+//        rockerLeft.setOnRockerChangeListener(new OnRockerChangeListener() {
+//            @Override
+//            public void onRockerChange(float xShittingRatio, float yShittingRatio) {
+//                String sendStr = "left:(" + Float.toString(xShittingRatio * 100) + "," + Float.toString(yShittingRatio * 100) + ")\n";
+//                try {
+//                    bluetoothConnection.sendRawData(sendStr.getBytes());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//        //右摇杆
+//        rockerRight.setOnRockerChangeListener(new OnRockerChangeListener() {
+//            @Override
+//            public void onRockerChange(float xShittingRatio, float yShittingRatio) {
+//                String sendStr = "right:(" + Float.toString(xShittingRatio * 100) + "," + Float.toString(yShittingRatio * 100) + ")\n";
+//                try {
+//                    bluetoothConnection.sendRawData(sendStr.getBytes());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+        // 不使用上面注释的代码，因为rocker的OnRockerChangeListener 触发太频繁，无法正常使用
+        java.util.Timer timer = new java.util.Timer(true);
+        TimerTask timerTask = new TimerTask() {
             @Override
-            public void onRockerChange(float xShittingRatio, float yShittingRatio) {
-//                Log.e("xS,yS",Float.toString(xShittingRatio)+","+Float.toString(yShittingRatio));
-                String sendStr = "left:(" + Float.toString(xShittingRatio * 100) + "," + Float.toString(yShittingRatio * 100) + ")\n";
+            public void run() {
+                short left_x = (short) (rockerLeft.getOutputX() / rockerLeft.getRange() * 1000);
+                short left_y = (short) (-rockerLeft.getOutputY() / rockerLeft.getRange() * 1000);
+                short right_x = (short) (rockerRight.getOutputX() / rockerRight.getRange() * 1000);
+                short right_y = (short) (-rockerRight.getOutputY() / rockerRight.getRange() * 1000);
+                ByteBuffer byteBuffer = ByteBuffer.allocate(9);
+                //小端序
+                byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
+                byteBuffer.put((byte) 'c');
+                byteBuffer.putShort(left_x);
+                byteBuffer.putShort(left_y);
+                byteBuffer.putShort(right_x);
+                byteBuffer.putShort(right_y);
                 try {
-                    bluetoothConnection.sendRawData(sendStr.getBytes());
+                    bluetoothConnection.sendRawData(byteBuffer.array());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        });
-        //右摇杆
-        rockerRight.setOnRockerChangeListener(new OnRockerChangeListener() {
-            @Override
-            public void onRockerChange(float xShittingRatio, float yShittingRatio) {
-                String sendStr = "right:(" + Float.toString(xShittingRatio * 100) + "," + Float.toString(yShittingRatio * 100) + ")\n";
-                try {
-                    bluetoothConnection.sendRawData(sendStr.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        };
+        // 从现在起50ms 发送一次指令
+        timer.schedule(timerTask, 1, 50);
+        //单片机还不支持这个指令
 
-        emergencyToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                String sendStr;
-                if (isChecked) {
-                    sendStr = "S\nS\n";
+//        // 紧急制动
+//        emergencyToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            @Override
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                String sendStr;
+//                if (isChecked) {
+//                    sendStr = "S\nS\n";
+//
+//                } else {
+//                    sendStr = "B\n";
+//                }
+//                try {
+//                    bluetoothConnection.sendRawData(sendStr.getBytes());
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
 
-                } else {
-                    sendStr = "B\n";
-                }
-                try {
-                    bluetoothConnection.sendRawData(sendStr.getBytes());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
 
         configureButton.setOnClickListener(view -> {
             Intent intent = new Intent(RockerControlActivity.this, DeviceListActivity.class);

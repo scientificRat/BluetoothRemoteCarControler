@@ -28,12 +28,15 @@ public class Rocker extends View {
     private float barRadius = DEFAULT_BAR_RADIUS;
     private float width = DEFAULT_RADIUS;
     private float height = DEFAULT_RADIUS;
-
+    // barX barY 是 【中央bar摇杆中心点】 相对于该整个控件(0,0)点的x,y偏移
     private float barX = 200;
     private float barY = 200;
 
     private float lastBarX =200;
     private float lastBarY =200;
+    //输出值
+    private float outputX =0;
+    private float outputY =0;
 
     private boolean justInit = true;
 
@@ -70,8 +73,11 @@ public class Rocker extends View {
         //绘制中心bar
         pen.setColor(Color.argb(200, 200, 200, 200));
         pen.setStyle(Paint.Style.FILL);
+        // barX barY 是 【中央bar摇杆中心点】 相对于该整个控件(0,0)点的x,y偏移
         canvas.drawCircle(barX, barY, this.barRadius, pen);
     }
+
+
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -84,6 +90,9 @@ public class Rocker extends View {
 
             lastBarX = barX;
             lastBarY = barY;
+            // 计算输出
+            this.outputX = (barX -width/2) / this.radius * RANGE;
+            this.outputY = (barY-height/2) / this.radius * RANGE;
             //listener callback
             if (this.onRockerChangeListener != null) {
                 onRockerChangeListener.onRockerChange(0, 0);
@@ -97,6 +106,7 @@ public class Rocker extends View {
             float deltaX = (x - width / 2);
             float deltaY = (y - height / 2);
             float r_square = deltaX * deltaX + deltaY * deltaY;
+            // barX barY 是 【中央bar摇杆中心点】 相对于该整个控件(0,0)点的x,y偏移, 设置这个全局变量用于 onDraw绘图
             if (r_square <= this.radius * this.radius) {
                 barX = x;
                 barY = y;
@@ -105,9 +115,12 @@ public class Rocker extends View {
                 barX = this.width / 2 + deltaX * scaleFactor;
                 barY = this.height / 2 + deltaY * scaleFactor;
             }
+            // 计算输出
+            this.outputX = (barX -width/2) / this.radius * RANGE;
+            this.outputY = (barY-height/2) / this.radius * RANGE;
             //listener callback (设置了一定的触发阈值)
             if (this.onRockerChangeListener != null && (Math.abs(barX-lastBarX)>=1.5 || Math.abs(barY-lastBarY)>=1.5 )) {
-                onRockerChangeListener.onRockerChange((barX -width/2) / this.radius * RANGE, (barY-height/2) / this.radius * RANGE);
+                onRockerChangeListener.onRockerChange(this.outputX, this.outputY);
             }
             lastBarX = barX;
             lastBarY = barY;
@@ -131,5 +144,14 @@ public class Rocker extends View {
 
     public float getRange() {
         return RANGE;
+    }
+
+    // 获取输出
+    public float getOutputX() {
+        return outputX;
+    }
+
+    public float getOutputY() {
+        return outputY;
     }
 }
