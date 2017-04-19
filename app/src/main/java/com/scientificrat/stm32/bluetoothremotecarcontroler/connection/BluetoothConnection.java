@@ -98,6 +98,7 @@ public class BluetoothConnection extends Thread {
      */
     public synchronized void sendRawData(byte[] data) throws IOException {
         this.outputStream.write(data);
+        this.outputStream.flush();
     }
 
     /**

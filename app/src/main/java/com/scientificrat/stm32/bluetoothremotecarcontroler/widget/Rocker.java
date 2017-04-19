@@ -32,11 +32,11 @@ public class Rocker extends View {
     private float barX = 200;
     private float barY = 200;
 
-    private float lastBarX =200;
-    private float lastBarY =200;
+    private float lastBarX = 200;
+    private float lastBarY = 200;
     //输出值
-    private float outputX =0;
-    private float outputY =0;
+    private volatile float outputX = 0;
+    private volatile float outputY = 0;
 
     private boolean justInit = true;
 
@@ -78,22 +78,21 @@ public class Rocker extends View {
     }
 
 
-
     @Override
     public boolean onTouchEvent(MotionEvent event) {
 
         //抬起或者移出区域时恢复正常位置
         int action = event.getAction();
         if (MotionEvent.ACTION_UP == action || MotionEvent.ACTION_OUTSIDE == action) {
-            barX = width / 2;
-            barY = height / 2;
+            this.barX = width / 2;
+            this.barY = height / 2;
 
-            lastBarX = barX;
-            lastBarY = barY;
+            this.lastBarX = this.barX;
+            this.lastBarY = this.barY;
             // 计算输出
-            this.outputX = (barX -width/2) / this.radius * RANGE;
-            this.outputY = (barY-height/2) / this.radius * RANGE;
-            //listener callback
+            this.outputX = (barX - width / 2) / this.radius * RANGE;
+            this.outputY = (barY - height / 2) / this.radius * RANGE;
+            // listener callback
             if (this.onRockerChangeListener != null) {
                 onRockerChangeListener.onRockerChange(0, 0);
             }
@@ -116,10 +115,10 @@ public class Rocker extends View {
                 barY = this.height / 2 + deltaY * scaleFactor;
             }
             // 计算输出
-            this.outputX = (barX -width/2) / this.radius * RANGE;
-            this.outputY = (barY-height/2) / this.radius * RANGE;
+            this.outputX = (barX - width / 2) / this.radius * RANGE;
+            this.outputY = (barY - height / 2) / this.radius * RANGE;
             //listener callback (设置了一定的触发阈值)
-            if (this.onRockerChangeListener != null && (Math.abs(barX-lastBarX)>=1.5 || Math.abs(barY-lastBarY)>=1.5 )) {
+            if (this.onRockerChangeListener != null && (Math.abs(barX - lastBarX) >= 1.5 || Math.abs(barY - lastBarY) >= 1.5)) {
                 onRockerChangeListener.onRockerChange(this.outputX, this.outputY);
             }
             lastBarX = barX;

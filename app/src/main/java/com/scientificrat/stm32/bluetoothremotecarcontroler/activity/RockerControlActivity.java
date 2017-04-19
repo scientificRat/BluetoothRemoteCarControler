@@ -6,7 +6,6 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
@@ -15,7 +14,6 @@ import android.widget.ToggleButton;
 
 import com.scientificrat.stm32.bluetoothremotecarcontroler.R;
 import com.scientificrat.stm32.bluetoothremotecarcontroler.connection.BluetoothConnection;
-import com.scientificrat.stm32.bluetoothremotecarcontroler.widget.OnRockerChangeListener;
 import com.scientificrat.stm32.bluetoothremotecarcontroler.widget.Rocker;
 
 import java.io.IOException;
@@ -32,6 +30,8 @@ public class RockerControlActivity extends AppCompatActivity {
     private TextView deviceInfoTextView;
     private ToggleButton emergencyToggleButton;
 
+    private boolean inEmergencyState = false;
+
 
     private BluetoothConnection bluetoothConnection = null;
 
@@ -39,8 +39,10 @@ public class RockerControlActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //隐藏状态栏
+        // 隐藏状态栏
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        // 不休眠
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_rocker_control);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -101,14 +103,22 @@ public class RockerControlActivity extends AppCompatActivity {
                 short left_y = (short) (-rockerLeft.getOutputY() / rockerLeft.getRange() * 1000);
                 short right_x = (short) (rockerRight.getOutputX() / rockerRight.getRange() * 1000);
                 short right_y = (short) (-rockerRight.getOutputY() / rockerRight.getRange() * 1000);
-                ByteBuffer byteBuffer = ByteBuffer.allocate(9);
+                if(inEmergencyState){
+                    left_x = 0;
+                    left_y = 0;
+                    right_x = 0;
+                    right_y = 0;
+                }
+                ByteBuffer byteBuffer = ByteBuffer.allocate(13);
                 //小端序
                 byteBuffer.order(ByteOrder.LITTLE_ENDIAN);
-                byteBuffer.put((byte) 'c');
+                byteBuffer.putShort((short)0x0d0a);
+                byteBuffer.put((byte)'0');
                 byteBuffer.putShort(left_x);
                 byteBuffer.putShort(left_y);
                 byteBuffer.putShort(right_x);
                 byteBuffer.putShort(right_y);
+                byteBuffer.putShort((short)0x0a0d);
                 try {
                     bluetoothConnection.sendRawData(byteBuffer.array());
                 } catch (IOException e) {
@@ -116,28 +126,20 @@ public class RockerControlActivity extends AppCompatActivity {
                 }
             }
         };
-        // 从现在起50ms 发送一次指令
-        timer.schedule(timerTask, 1, 50);
-        //单片机还不支持这个指令
+        // 从现在起20ms 发送一次指令
+        timer.schedule(timerTask, 1, 100);
 
-//        // 紧急制动
-//        emergencyToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            @Override
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                String sendStr;
-//                if (isChecked) {
-//                    sendStr = "S\nS\n";
-//
-//                } else {
-//                    sendStr = "B\n";
-//                }
-//                try {
-//                    bluetoothConnection.sendRawData(sendStr.getBytes());
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
+        // 紧急制动
+        emergencyToggleButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(isChecked){
+                    inEmergencyState = true;
+                }else {
+                    inEmergencyState = false;
+                }
+            }
+        });
 
 
         configureButton.setOnClickListener(view -> {
